@@ -205,28 +205,25 @@ int main(int argc, char* argv[]) {
 
         for (size_t i = 0; i < targetscnt; ++i) {
             char const* target = targets[i];
+            size_t const targetlen = strlen(target);
 
             // Inefficient: linear scan over prereqs for each target
-            rewind(prereqh); // XXX: check return
+            rewind(prereqh); // XXX: fail?
             bool found = false;
             char linebuf[LINE_MAX] = {0};
-            while (!found && fgets(linebuf, LINE_MAX, prereqh)) { // XXX: getdelim?
-                size_t linelen = strlen(linebuf);
-                if (linebuf[linelen-1] == '\n')
-                    linebuf[--linelen] = '\0';
-                found = (strcmp(target, linebuf) == 0);
-            }
+            while (!found && fgets(linebuf, LINE_MAX, prereqh)) // XXX: getdelim?
+                found = strncmp(linebuf, target, targetlen) == 0;
 
             // Determine if search failed due to error
             if (!found && !feof(prereqh))
                 err(1, "I/O error");
 
-            // Record new depend, unless found
+            // Record new depend
             if (!found)
                 fprintf(prereqh, "%s\n", target);
         }
 
-        fsync(fileno(prereqh)); // fclose only flushes stdio buffers
+        fsync(fileno(prereqh));
         fclose(prereqh);
 
         /*
