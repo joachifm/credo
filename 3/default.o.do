@@ -11,5 +11,5 @@ srcfile=${1/.o/.c}
 depfile=${1/.o/.d}
 
 cc -g3 -Wall -DBUILD_MODE_DEVEL=1 -MMD -MF "$depfile" -c "$srcfile" -o "$3"
-deps=$(cut -d ':' -f 2- < "$depfile")
+deps=$(cut -d ':' -f 2- < "$depfile") ; rm "$depfile"
 redo-ifchange $deps
