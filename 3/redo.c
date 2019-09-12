@@ -209,11 +209,17 @@ int main(int argc, char* argv[]) {
         size_t const targetscnt = (size_t)argc - 1;
 
         /*
-         * Record dependency(parent, target)
+         * Resolve prereq file
          */
 
         char prereqfile_path[PATH_MAX] = {0};
         xsnprintf(prereqfile_path, (size_t)PATH_MAX, "%s.prereq", parent_target);
+
+        /*
+         * Record dependency(parent, target) for each target
+         *
+         * If any of the targets change, the parent target is marked as outdated.
+         */
 
         FILE* prereqh = fopen(prereqfile_path, "a+");
         if (!prereqh)
@@ -223,11 +229,11 @@ int main(int argc, char* argv[]) {
             char const* target = targets[i];
             size_t const targetlen = strlen(target);
 
-            // Inefficient: linear scan over prereqs for each target
-            rewind(prereqh); // XXX: fail?
+            // XXX: linear scan over prereqs for each target
+            rewind(prereqh); // XXX: handle failure?
             bool found = false;
             char linebuf[LINE_MAX] = {0};
-            while (!found && fgets(linebuf, LINE_MAX, prereqh)) // XXX: getdelim?
+            while (!found && fgets(linebuf, LINE_MAX, prereqh)) // XXX: use getdelim?
                 found = strncmp(linebuf, target, targetlen) == 0;
 
             // Determine if search failed due to error
@@ -244,6 +250,8 @@ int main(int argc, char* argv[]) {
 
         /*
          * Identify & rebuild outdated targets
+         *
+         * For any outdated target foo, run `redo foo`
          */
 
         // TODO
