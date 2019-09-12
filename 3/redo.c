@@ -100,6 +100,8 @@ int main(int argc, char* argv[]) {
                 } else {
                     err(-errno, "stat");
                 }
+            } else if ((dofile_stat.st_mode & S_IEXEC) == 0) {
+                errx(1, "dofile exists but is not executable: %s", dofile);
             } else {
                 break; /* found it */
             }
