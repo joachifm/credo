@@ -209,11 +209,12 @@ int main(int argc, char* argv[]) {
         size_t const targetscnt = (size_t)argc - 1;
 
         /*
-         * Resolve prereq file
+         * Resolve parent prereq file
          */
 
-        char prereqfile_path[PATH_MAX] = {0};
-        xsnprintf(prereqfile_path, (size_t)PATH_MAX, "%s.prereq", parent_target);
+        char parent_prereqfile_path[PATH_MAX] = {0};
+        xsnprintf(parent_prereqfile_path, (size_t)PATH_MAX, "%s.prereq",
+                  parent_target);
 
         /*
          * Record dependency(parent, target) for each target
@@ -221,8 +222,8 @@ int main(int argc, char* argv[]) {
          * If any of the targets change, the parent target is marked as outdated.
          */
 
-        FILE* prereqh = fopen(prereqfile_path, "a+");
-        if (!prereqh)
+        FILE* parent_prereqh = fopen(parent_prereqfile_path, "a+");
+        if (!parent_prereqh)
             err(1, "fopen");
 
         for (size_t i = 0; i < targetscnt; ++i) {
@@ -230,23 +231,23 @@ int main(int argc, char* argv[]) {
             size_t const targetlen = strlen(target);
 
             // XXX: linear scan over prereqs for each target
-            rewind(prereqh); // XXX: handle failure?
+            rewind(parent_prereqh); // pretend that fseek(3) never fails
             bool found = false;
             char linebuf[LINE_MAX] = {0};
-            while (!found && fgets(linebuf, LINE_MAX, prereqh)) // XXX: use getdelim?
+            while (!found && fgets(linebuf, LINE_MAX, parent_prereqh)) // XXX: use getdelim?
                 found = strncmp(linebuf, target, targetlen) == 0;
 
             // Determine if search failed due to error
-            if (!found && !feof(prereqh))
+            if (!found && !feof(parent_prereqh))
                 err(1, "I/O error");
 
             // Record new depend
             if (!found)
-                fprintf(prereqh, "%s\n", target);
+                fprintf(parent_prereqh, "%s\n", target);
         }
 
-        fsync(fileno(prereqh));
-        fclose(prereqh);
+        fsync(fileno(parent_prereqh));
+        fclose(parent_prereqh);
 
         /*
          * Identify & rebuild outdated targets
