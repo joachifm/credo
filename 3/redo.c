@@ -248,6 +248,7 @@ int main(int argc, char* argv[]) {
 
         fsync(fileno(parent_prereqh));
         fclose(parent_prereqh);
+        parent_prereqh = 0;
 
         /*
          * Identify & rebuild outdated targets
