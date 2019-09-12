@@ -153,13 +153,14 @@ int main(int argc, char* argv[]) {
          * The dofile is expected to treat the paths named at $1 and $2 as
          * immutable; the dofile can only write to $3 or stdout/err.
          */
+
         pid_t dofile_pid = fork();
         switch (dofile_pid) {
         case 0:
             xsetenv("PATH", REDO_EXEC_PREFIX ":" REDO_PATH);
             xsetenv("REDO_PARENT", target);
             execl(dofile, dofile, target, targetbase, outfile_path, (char*)0);
-            err(-errno, "exec");
+            err(-errno, "exec dofile: %s", dofile);
         case -1:
             err(-errno, "fork");
         }
