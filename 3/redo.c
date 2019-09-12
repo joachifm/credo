@@ -28,6 +28,15 @@
 int main(int argc, char* argv[]) {
     char const* progname = basename(argv[0]);
     char const* parent_target = getenv("REDO_PARENT");
+    const bool redo_chatty = getenv("REDO_VERBOSE") ? true : false;
+
+    if (redo_chatty) {
+        xsetenv("REDO_DOFILE_TRACE", "1");
+        fprintf(stderr, "redo: invoked as %s\n", progname);
+        if (parent_target) {
+            fprintf(stderr, "redo: parent target is %s\n", parent_target);
+        }
+    }
 
     if (streq(progname, "redo")) {
         /*
@@ -105,6 +114,10 @@ int main(int argc, char* argv[]) {
             } else {
                 break; /* found it */
             }
+        }
+
+        if (redo_chatty) {
+            fprintf(stderr, "redo: resolved dofile: %s\n", dofile);
         }
 
         /*
