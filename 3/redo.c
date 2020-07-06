@@ -82,7 +82,7 @@ int main(int argc, char* argv[]) {
          * Resolve dofile
          */
 
-        int candno = 1; /* alternative dofile paths tried in order */
+        int candno = 1; /* tracks which dofile path candidate is being tested */
         char dofile[PATH_MAX] = {0}; /* current dofile candidate path */
         struct stat dofile_stat = {0}; /* stat info for candidate dofile */
 
